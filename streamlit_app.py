@@ -1,6 +1,6 @@
 import streamlit as st
 import pandas as pd
-import io
+import io, time
 from datetime import datetime
 
 
