@@ -1,0 +1,10 @@
+streamlit==1.47.1
+pandas==2.3.1
+xlsxwriter==3.2.5
+openpyxl==3.1.5
+selenium==4.34.2
+matplotlib==3.10.5
+numpy==2.3.2
+
+
+
