@@ -101,14 +101,13 @@ tam='''
 #@st.cache_data
 def download_data_smarts(regions):
     #xoa thu muc downloads va tao lai de chi chua 2 file du lieu
-    #folder_path_cu = 'downloads'
+    folder_path_cu = 'downloads'
     # Xóa thư mục nếu tồn tại
-    #if os.path.exists(folder_path_cu):
-    #    shutil.rmtree(folder_path_cu)  # Xóa toàn bộ thư mục và nội dung bên trong
+    if os.path.exists(folder_path_cu):
+        shutil.rmtree(folder_path_cu)  # Xóa toàn bộ thư mục và nội dung bên trong
 
-    #download_dir = os.path.abspath("downloads")
-    #os.makedirs(download_dir, exist_ok=True)
-    download_dir = tempfile.mkdtemp()
+    download_dir = os.path.abspath("downloads")
+    os.makedirs(download_dir, exist_ok=True)
 
     # ✅ CẤU HÌNH CHROME:
     options = webdriver.ChromeOptions()
@@ -141,7 +140,6 @@ def download_data_smarts(regions):
         "Industrial Ad Hoc Reports - Parameter Data",
         "Industrial Annual Reports"
     ]
-
     def wait_for_download_and_get_new_file(before_files, timeout=40):
         for _ in range(timeout * 2):
             time.sleep(0.5)
@@ -184,9 +182,9 @@ def download_data_smarts(regions):
                 lfile_datai.append(f"{dst}")
                 # Hiển thị nút tải file về local
                 with open(dst, "rb") as f:
-                    st.download_button(f"⬇️ Tải file {j+1}", 
+                    st.download_button(f"⬇️ Download: {dst.split('Industrial_')[-1]}", 
                         f, 
-                        file_name=dst
+                        file_name=dst.split('Industrial_')[-1]
                     )
 
             else:
