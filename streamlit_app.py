@@ -140,7 +140,7 @@ def ThucThiPhan_II(sheet2,sheet1):
         st.write(df_final.shape)
         st.dataframe(df_final)
     else:
-        st.write('Xử lí không thành công!')
+         tbaodong1.write('Xử lí không thành công!')
 
 #----------------------
 def ThucThiPhan_III():
@@ -175,7 +175,8 @@ if checkboxII:
         sheet2 = "Datatest/sheet2.txt"
         sheet1 = "Datatest/sheet1.txt"
         if not (os.path.exists(sheet2) and os.path.exists(sheet1)):
-            st.write(f"Chưa có : {sheet2}, {sheet1}")
+            tbaodong1 = st.empty()
+            tbaodong1.write(f"Chưa có : {sheet2}, {sheet1}")
         else:
             tbaodong1 = st.empty()
             tbaodong1.success(f"Dữ liệu đã lấy là : :blue[{sheet2}], :green[{sheet1}]. :red[⏳ Đang xử lý...]")
@@ -185,9 +186,11 @@ if checkboxII:
         sheet2 = st.file_uploader("Upload sheet2.txt :red[(Application Specific Data)]", type=["txt"])
         sheet1 = st.file_uploader("Upload sheet1.txt :red[(Ad Hoc Reports Data)]", type=["txt"])
         if not (sheet2 and sheet1):
-            st.write('Chưa có dữ liệu')
+            tbaodong1 = st.empty()
+            tbaodong1.write('Chưa có dữ liệu')
         else:
-            st.success(f"Đã lấy dữ liệu cần : {sheet2.name}, {sheet1.name}.Chờ xử lí.")
+            tbaodong1 = st.empty()
+            tbaodong1.success(f"Đã lấy dữ liệu cần : {sheet2.name}, {sheet1.name}.Chờ xử lí.")
             ThucThiPhan_II(sheet2, sheet1)
  
 # IV DO THI HOA DU LIEU -------------------------
