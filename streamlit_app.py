@@ -190,7 +190,7 @@ if checkboxII:
             tbaodong1.write('Chưa có dữ liệu')
         else:
             tbaodong1 = st.empty()
-            tbaodong1.success(f"Đã lấy dữ liệu cần : {sheet2.name}, {sheet1.name}.Chờ xử lí.")
+            tbaodong1.success(f"Đã lấy dữ liệu cần : {sheet2.name}, {sheet1.name}. :red[⏳ Đang xử lý...]")
             ThucThiPhan_II(sheet2, sheet1)
  
 # IV DO THI HOA DU LIEU -------------------------
