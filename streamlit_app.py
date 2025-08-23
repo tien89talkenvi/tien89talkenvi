@@ -33,7 +33,139 @@ thresholds = {
 }
 #-------------------
 def ThucThiPhan_I():
-    pass
+    LOI='OK'
+    # Ham tai file txt du lieu dang cvs cua cac mien thuoc bang Cali
+    def download_data_smarts(regions):
+        #xoa thu muc downloads va tao lai de chi chua 2 file du lieu
+        folder_path_cu = 'downloads'
+        # Xóa thư mục nếu tồn tại
+        if os.path.exists(folder_path_cu):
+            shutil.rmtree(folder_path_cu)  # Xóa toàn bộ thư mục và nội dung bên trong
+
+        download_dir = os.path.abspath("downloads")
+        os.makedirs(download_dir, exist_ok=True)
+
+        # ✅ CẤU HÌNH CHROME:
+        options = webdriver.ChromeOptions()
+        prefs = {
+            "download.default_directory": download_dir,
+            "download.prompt_for_download": False,
+            "download.directory_upgrade": True,
+            "safebrowsing.enabled": True,
+            "profile.default_content_setting_values.automatic_downloads": 1   # DÒNG QUAN TRỌNG DE TAT THONG BAO
+        }
+        options.add_experimental_option("prefs", prefs)
+        options.add_argument("--headless")  # chạy ẩn trình duyệt
+
+        # ✅ KHỞI TẠO TRÌNH DUYỆT
+        driver = webdriver.Chrome(options=options)
+
+        driver.get("https://smarts.waterboards.ca.gov/smarts/SwPublicUserMenu.xhtml")
+        print("✅ Vào trang chính")
+
+        WebDriverWait(driver, 15).until(
+            EC.element_to_be_clickable((By.LINK_TEXT, "Download NOI Data By Regional Board"))
+        ).click()
+
+        WebDriverWait(driver, 10).until(lambda d: len(d.window_handles) > 1)
+        driver.switch_to.window(driver.window_handles[-1])
+        print("✅ Đã chuyển sang tab mới")
+
+        links = [
+            "Industrial Application Specific Data",
+            "Industrial Ad Hoc Reports - Parameter Data",
+            "Industrial Annual Reports"
+        ]
+
+        def wait_for_download_and_get_new_file(before_files, timeout=40):
+            for _ in range(timeout * 2):
+                time.sleep(0.5)
+                after_files = set(os.listdir(download_dir))
+                new_files = after_files - before_files
+                txt_files = [f for f in new_files if f.endswith(".txt")]
+                if txt_files:
+                    return txt_files[0]
+            return None
+        #---------------------
+        region = regions
+        print(f"\n🔹 Chọn Region: {region}")
+        dropdown = WebDriverWait(driver, 15).until(
+            EC.presence_of_element_located((By.NAME, "intDataFileDowloaddataFileForm:intDataDumpSelectOne"))
+        )
+        Select(dropdown).select_by_visible_text(region)
+        time.sleep(3)  # Đợi dropdown load lại
+        
+        lfile_datai = []
+
+        for j, name in enumerate(links):
+            try:
+                print(f"📥 Đang click tải: {name}")
+                before = set(os.listdir(download_dir))
+
+                link_elem = WebDriverWait(driver, 15).until(
+                    EC.element_to_be_clickable((By.LINK_TEXT, name))
+                )
+                driver.execute_script("arguments[0].click();", link_elem)
+
+                fname = wait_for_download_and_get_new_file(before)
+                if fname:
+                    # Tạo tên file chuẩn theo Region + tên file
+                    src = os.path.join(download_dir, fname)
+                    dst_name = f"{region} - {name}.txt"
+                    dst_name = dst_name.replace(" ", "_")  # Nếu muốn
+                    dst = os.path.join(download_dir, dst_name)
+                    os.rename(src, dst)
+                    print(f"File đã lưu: {dst}")
+                    lfile_datai.append(f"{dst}")
+                else:
+                    print("❌ Không tìm thấy file mới sau khi tải")
+            except Exception as e:
+                print(f"❌ Lỗi khi tải {name} ở Region {region}: {e}")
+
+        driver.quit()
+        print("\n🎉 Hoàn tất tải file cho "+region)
+        return lfile_datai
+        # CHU Y rang neu ten file dat trung voi file da co thi that bai.
+
+    #-phan chinh cchon------------------------
+    # cac vung de chon
+    regions = st.selectbox("Select a Region:", 
+                ("Region 1 - North Coast",
+                "Region 2 - San Francisco Bay",
+                "Region 3 - Central Coast",
+                "Region 4 - Los Angeles",
+                "Region 5F - Fresno",
+                "Region 5R - Redding",
+                "Region 5S - Sacramento",
+                "Region 6A - South Lake Tahoe",
+                "Region 6B - Victorville",
+                "Region 7 - Colorado River Basin",
+                "Region 8 - Santa Ana",
+                "Region 9 - San Diego"),
+                index=None,
+                placeholder="No selected Region",
+                )
+    #neu mot vung duoc chon thi lam
+    LOI='OK'
+    if regions:
+        placeholder_1 = st.empty()
+        placeholder_1.write('Wait for downloading 2 files of ' + regions)
+        #thuc thi ham download_data_smarts(regions) va tra ve list cac file da tai 
+        try :
+            lfile_datai = download_data_smarts(regions)
+            placeholder_1.write('Downloaded files:')
+            st.write(*lfile_datai,sep='\n')
+        except:
+            LOI='LOI'
+            placeholder_1.write('Tai file không đạt!')
+    if LOI == 'LOI':
+        st.write('Nếu không đạt, '+ ':red[ mở trực tiếp trang sau làm theo các bước để tải:]')
+        st.markdown("1-[Open Page SMARTS](https://smarts.waterboards.ca.gov/smarts/SwPublicUserMenu.xhtml)", unsafe_allow_html=True)
+        st.write('2-Click on “Download NOI Data By Regional Board”')
+        st.write('3-Select your region from the dropdown menu')
+        st.write('4-Click on both “Industrial Application Specific Data” and “Industrial Ad Hoc Reports - Parameter Data”')
+        st.write('5-Data will be downloaded to two separate .txt files, each titled “file”')
+        st.write('6-Nên đổi tên 2 file thành Industrial_Application_Specific_Data và Industrial_Ad_Hoc_Reports_-_Parameter_Data rồi chép vào thư mục riêng của bạn để dễ làm việc ở các bước sau.')
 
 #-------------------
 #@st.cache_data
