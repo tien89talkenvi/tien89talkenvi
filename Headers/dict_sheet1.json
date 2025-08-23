@@ -1,0 +1,41 @@
+{
+    "1#": "Định danh hồ sơ / báo cáo:",
+    "WDID": "Mã định danh xả thải (Waste Discharge ID)",
+    "APP_ID": "Mã hồ sơ đăng ký (Application ID)",
+    "REPORTING_YEAR": "Năm báo cáo",
+    "REPORT_ID": "Mã báo cáo",
+    "EVENT_TYPE": "Loại sự kiện giám sát",
+
+    "2#": "Thông tin vị trí quan trắc:",
+    "MONITORING_LOCATION_NAME": "Tên vị trí quan trắc",
+    "MONITORING_LOCATION_TYPE": "Loại vị trí quan trắc",
+    "MONITOR_LOCATION_DESCRIPTION": "Mô tả vị trí quan trắc",
+    "MONITORING_LATITUDE": "Vĩ độ vị trí quan trắc",
+    "MONITORING_LONGITUDE": "Kinh độ vị trí quan trắc",
+
+    "3#": "Thông tin mẫu:",
+    "SAMPLE_ID": "Mã mẫu",
+    "SAMPLE_DATE": "Ngày lấy mẫu",
+    "SAMPLE_TIME": "Thời gian lấy mẫu",
+
+    "4#": "Thông tin xả thải",
+    "DISCHARGE_START_DATE": "Ngày bắt đầu xả thải:",
+    "DISCHARGE_START_TIME": "Thời gian bắt đầu xả thải",
+    "DISCHARGE_END_DATE": "Ngày kết thúc xả thải",
+    "DISCHARGE_END_TIME": "Thời gian kết thúc xả thải",
+
+    "5#": "Thông số quan trắc & kết quả:",
+    "PARAMETER": "Thông số quan trắc (ví dụ: pH, TSS, kim loại nặng...)",
+    "RESULT_QUALIFIER": "Điều kiện/ghi chú kết quả",
+    "RESULT": "Kết quả quan trắc",
+    "UNITS": "Đơn vị đo",
+
+    "6#": "Phân tích & ngưỡng kỹ thuật:",
+    "ANALYTICAL_METHOD": "Phương pháp phân tích",
+    "MDL": "Giới hạn phát hiện phương pháp (Method Detection Limit)",
+    "RL": "Giới hạn báo cáo (Reporting Limit)",
+
+    "7#": "Thông tin chứng nhận dữ liệu:",
+    "CERTIFIER_NAME": "Tên người chứng nhận dữ liệu",
+    "CERTIFIED_DATE": "Ngày dữ liệu được chứng nhận"
+}

@@ -1,0 +1,55 @@
+{
+    "1#" : "Ý nghĩa các cột (dịch & giải thích)",
+    "PERMIT_TYPE": "Loại giấy phép (Permit type)",
+    "APP_ID": "Mã hồ sơ đăng ký (Application ID)",
+    "WDID": "Mã định danh xả thải (Waste Discharge ID)",
+    "STATUS": "Trạng thái giấy phép",
+    "NOI_PROCESSED_DATE": "Ngày xử lý hồ sơ NOI (Notice of Intent)",
+    "NOT_EFFECTIVE_DATE": "Ngày giấy phép có hiệu lực",
+    "REGION_BOARD": "Khu vực quản lý (Regional Water Board)",
+    "COUNTY": "Quận/Hạt",
+
+    "2#":  "Thông tin về cơ sở (Facility info)",
+    "OPERATOR_NAME": "Tên đơn vị vận hành (Operator)",
+    "FACILITY_NAME": "Tên cơ sở",
+    "FACILITY_ADDRESS": "Địa chỉ cơ sở",
+    "FACILITY_ADDRESS_2": "Địa chỉ cơ sở (dòng 2)",
+    "FACILITY_CITY": "Thành phố",
+    "FACILITY_STATE": "Bang/Tiểu bang",
+    "FACILITY_ZIP": "Mã bưu điện",
+    "FACILITY_LATITUDE": "Vĩ độ cơ sở",
+    "FACILITY_LONGITUDE": "Kinh độ cơ sở",
+    "FACILITY_COUNTY": "Quận/Hạt nơi cơ sở tọa lạc",
+
+    "3#":  "Liên hệ",
+    "FACILITY_CONTACT_FIRST_NAME": "Tên người liên hệ",
+    "FACILITY_CONTACT_LAST_NAME": "Họ người liên hệ",
+    "FACILITY_TITLE": "Chức danh của người liên hệ",
+    "FACILITY_PHONE": "Điện thoại",
+    "FACILITY_EMAIL": "Email",
+
+    "4#":  "Quy mô & hoạt động",
+    "FACILITY_TOTAL_SIZE": "Tổng diện tích cơ sở",
+    "FACILITY_TOTAL_SIZE_UNIT": "Đơn vị diện tích",
+    "FACILITY_AREA_ACTIVITY": "Diện tích có hoạt động",
+    "FACILITY_AREA_ACTIVITY_UNIT": "Đơn vị diện tích hoạt động",
+    "PERCENT_OF_SITE_IMPERVIOUSNESS": "Phần trăm diện tích bề mặt không thấm nước",
+
+    "5#":  "Phân loại & nguồn nước nhận",
+    "PRIMARY_SIC": "Mã ngành công nghiệp chính (SIC code)",
+    "SECONDARY_SIC": "Mã ngành phụ (SIC code)",
+    "TERTIARY_SIC": "Mã ngành thứ ba (SIC code)",
+    "RECEIVING_WATER_NAME": "Tên nguồn nước nhận xả thải",
+
+    "6#":  "Liên quan tới xả thải",
+    "INDIRECTLY": "Xả thải gián tiếp",
+    "DIRECTLY": "Xả thải trực tiếp",
+
+    "7#":  "Chứng nhận",
+    "CERTIFIER_BY": "Người chứng nhận",
+    "CERTIFIER_TITLE": "Chức danh người chứng nhận",
+    "CERTIFICATION_DATE": "Ngày chứng nhận",
+
+    "8#":  "Câu hỏi đặc thù",
+    "QUESTION_TMDL_ANSWER": "Câu trả lời về TMDL (Total Maximum Daily Load)"
+}
