@@ -18,211 +18,179 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-import socket
 
-tam='''
-    def wait_for_download(download_dir, timeout=60):
-        """Chờ đến khi có file trong thư mục download"""
-        start_time = time.time()
-        while True:
-            files = os.listdir(download_dir)
-            if files:  # có ít nhất 1 file
-                files = [os.path.join(download_dir, f) for f in files]
-                # nếu nhiều file thì chọn file mới chỉnh sửa gần nhất
-                return max(files, key=os.path.getmtime)
-            if time.time() - start_time > timeout:
-                raise TimeoutError("Không thấy file tải về trong thời gian chờ")
-            time.sleep(1)
+# ---------------------------
+# Bảng ngưỡng tham chiếu (ví dụ)
+# Bạn có thể cập nhật lại theo tài liệu chuẩn của bạn
+# ---------------------------
+thresholds = {
+    "Zinc": 0.26,    # mg/L
+    "TSS": 100,      # mg/L
+    "COD": 120,      # mg/L
+    "BOD": 30,       # mg/L
+    "pH_low": 6.0,   # std units
+    "pH_high": 9.0
+}
+#-------------------
+def ThucThiPhan_I():
+    pass
+
+#-------------------
+#@st.cache_data
+def ThucThiPhan_II(sheet2,sheet1):
+    if sheet2 and sheet1:
+        # Đọc sheet2.txt (Application Specific Data)
+        df1 = pd.read_csv(sheet2, sep="\t", dtype=str)
+        #st.write(df1)
+
+        # Đọc sheet1.txt (Ad Hoc Reports Data)
+        df2 = pd.read_csv(sheet1, sep="\t", dtype=str)
+        #st.write(df2)
 
 
-    def download_file_with_selenium(url, new_name):
-        """Mở url, click tải file, đổi tên file thành new_name, trả về path"""
-        # 1. Tạo thư mục tạm trên server
-        download_dir = tempfile.mkdtemp()
+        # Đảm bảo APP_ID cùng kiểu dữ liệu
+        df1["APP_ID"] = df1["APP_ID"].astype(str)
+        df2["APP_ID"] = df2["APP_ID"].astype(str)
 
-        chrome_options = webdriver.ChromeOptions()
-        prefs = {
-            "download.default_directory": download_dir,
-            "download.prompt_for_download": False,
-            "download.directory_upgrade": True,
-            "safebrowsing.enabled": True
-        }
-        chrome_options.add_experimental_option("prefs", prefs)
-        chrome_options.add_argument("--headless=new")  # chạy không cần giao diện
-        chrome_options.add_argument("--no-sandbox")
-        chrome_options.add_argument("--disable-dev-shm-usage")
 
-        driver = webdriver.Chrome(
-            service=Service(ChromeDriverManager().install()),
-            options=chrome_options
+        # Merge dữ liệu
+        df = df2.merge(df1, on="APP_ID", how="left")
+
+        # Giữ lại STATUS=Active
+        df = df[df["STATUS"] == "Active"].copy()
+
+        # Chuyển RESULT sang số
+        df["RESULT"] = pd.to_numeric(df["RESULT"], errors="coerce")
+
+        # Chuyển đổi đơn vị µg/L → mg/L nếu cần
+        df["UNITS"] = df["UNITS"].str.strip()
+        mask = df["UNITS"] == "µg/L"
+        df.loc[mask, "RESULT"] = df.loc[mask, "RESULT"] / 1000
+        df.loc[mask, "UNITS"] = "mg/L"
+
+        # Thêm cột OLD/NEW (mặc định = "New")
+        df["OLD/NEW"] = "New"
+
+
+        # Thêm cột EXCEED và NOTES
+        df["EXCEED"] = False
+        df["NOTES"] = ""
+
+        # --- Check pH ---
+        mask_ph = df["PARAMETER"] == "pH"
+        df.loc[mask_ph, "EXCEED"] = ~df.loc[mask_ph, "RESULT"].between(
+            thresholds["pH_low"], thresholds["pH_high"], inclusive="both"
+        )
+        df.loc[mask_ph & df["EXCEED"], "NOTES"] = (
+            f"pH out of range ({thresholds['pH_low']}–{thresholds['pH_high']})"
         )
 
-        # 2. Mở trang web
-        driver.get(url)
-
-        # TODO: chèn bước click nút download tại đây
-        # driver.find_element("xpath", "//button[text()='Download']").click()
-
-        # 3. Đợi file tải xong
-        latest_file = wait_for_download(download_dir)
-
-        # 4. Đặt tên file mới
-        new_path = os.path.join(download_dir, new_name)
-        os.rename(latest_file, new_path)
-
-        driver.quit()
-        return new_path
+        # --- Check các parameter còn lại ---
+        for param, limit in thresholds.items():
+            if param in ["pH_low", "pH_high"]:
+                continue
+            mask_param = df["PARAMETER"] == param
+            df.loc[mask_param, "EXCEED"] = df.loc[mask_param, "RESULT"] > limit
+            df.loc[mask_param & df["EXCEED"], "NOTES"] = "> NAL=" + str(limit)
 
 
-    # ================== STREAMLIT APP ==================
-    st.title("📥 Demo tải file và đổi tên bằng Selenium")
+        # Đảm bảo đúng thứ tự 19 cột
+        final_cols = [
+            "WDID", "APP_ID", "STATUS", "FACILITY_NAME", "OPERATOR_NAME",
+            "ADDRESS", "CITY", "STATE", "ZIP",
+            "PRIMARY_SIC", "SECONDARY_SIC", "TERTIARY_SIC",
+            "PARAMETER", "RESULT", "UNITS", "REPORTING_YEAR",
+            "OLD/NEW", "EXCEED", "NOTES"
+        ]
 
-    if st.button("Tải dữ liệu"):
-        try:
-            # Tải file và đổi tên
-            url = "https://example.com"  # thay link thật
-            new_name = f"data_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+        # Thêm cột bị thiếu
+        for col in final_cols:
+            if col not in df.columns:
+                df[col] = ""
 
-            file_path = download_file_with_selenium(url, new_name)
-
-            # Cho phép tải về local
-            with open(file_path, "rb") as f:
-                st.download_button(
-                    label="⬇️ Tải file đã đổi tên",
-                    data=f,
-                    file_name=new_name,
-                    mime="text/plain"
-                )
-
-        except Exception as e:
-            st.error(f"Lỗi: {e}")
-    '''
-# cac vung de chon-----------------------------------------------------
-#@st.cache_data
-def download_data_smarts(regions):
-    #xoa thu muc downloads va tao lai de chi chua 2 file du lieu
-    folder_path_cu = 'downloads'
-    # Xóa thư mục nếu tồn tại
-    if os.path.exists(folder_path_cu):
-        shutil.rmtree(folder_path_cu)  # Xóa toàn bộ thư mục và nội dung bên trong
-
-    download_dir = os.path.abspath("downloads")
-    os.makedirs(download_dir, exist_ok=True)
-
-    # ✅ CẤU HÌNH CHROME:
-    options = webdriver.ChromeOptions()
-    prefs = {
-        "download.default_directory": download_dir,
-        "download.prompt_for_download": False,
-        "download.directory_upgrade": True,
-        "safebrowsing.enabled": True,
-        "profile.default_content_setting_values.automatic_downloads": 1   # DÒNG QUAN TRỌNG DE TAT THONG BAO
-    }
-    options.add_experimental_option("prefs", prefs)
-    options.add_argument("--headless")  # chạy ẩn trình duyệt
-
-    # ✅ KHỞI TẠO TRÌNH DUYỆT
-    driver = webdriver.Chrome(options=options)
-
-    driver.get("https://smarts.waterboards.ca.gov/smarts/SwPublicUserMenu.xhtml")
-    print("✅ Vào trang chính")
-
-    WebDriverWait(driver, 15).until(
-        EC.element_to_be_clickable((By.LINK_TEXT, "Download NOI Data By Regional Board"))
-    ).click()
-
-    WebDriverWait(driver, 10).until(lambda d: len(d.window_handles) > 1)
-    driver.switch_to.window(driver.window_handles[-1])
-    print("✅ Đã chuyển sang tab mới")
-
-    links = [
-        "Industrial Application Specific Data",
-        "Industrial Ad Hoc Reports - Parameter Data",
-        "Industrial Annual Reports"
-    ]
-    def wait_for_download_and_get_new_file(before_files, timeout=40):
-        for _ in range(timeout * 2):
-            time.sleep(0.5)
-            after_files = set(os.listdir(download_dir))
-            new_files = after_files - before_files
-            txt_files = [f for f in new_files if f.endswith(".txt")]
-            if txt_files:
-                return txt_files[0]
-        return None
-    #---------------------
-    region = regions
-    print(f"\n🔹 Chọn Region: {region}")
-    dropdown = WebDriverWait(driver, 15).until(
-        EC.presence_of_element_located((By.NAME, "intDataFileDowloaddataFileForm:intDataDumpSelectOne"))
-    )
-    Select(dropdown).select_by_visible_text(region)
-    time.sleep(3)  # Đợi dropdown load lại
-    
-    lfile_datai = []
-
-    for j, name in enumerate(links):
-        try:
-            print(f"📥 Đang click tải: {name}")
-            before = set(os.listdir(download_dir))
-
-            link_elem = WebDriverWait(driver, 15).until(
-                EC.element_to_be_clickable((By.LINK_TEXT, name))
-            )
-            driver.execute_script("arguments[0].click();", link_elem)
-
-            fname = wait_for_download_and_get_new_file(before)
-            if fname:
-                # Tạo tên file chuẩn theo Region + tên file
-                src = os.path.join(download_dir, fname)
-                dst_name = f"{region} - {name}.txt"
-                dst_name = dst_name.replace(" ", "_")  # Nếu muốn
-                dst = os.path.join(download_dir, dst_name)
-                os.rename(src, dst)
-                print(f"File đã lưu: {dst}")
-                lfile_datai.append(f"{dst}")
-                # Hiển thị nút tải file về local
-                with open(dst, "rb") as f:
-                    st.download_button(f"⬇️ Download: {dst.split('Industrial_')[-1]}", 
-                        f, 
-                        file_name=dst.split('Industrial_')[-1]
-                    )
-
-            else:
-                print("❌ Không tìm thấy file mới sau khi tải")
-        except Exception as e:
-            print(f"❌ Lỗi khi tải {name} ở Region {region}: {e}")
-
-    driver.quit()
-    print("\n🎉 Hoàn tất tải file cho "+region)
-    return lfile_datai
+        # Lấy đúng thứ tự 19 cột
+        df_final = df[final_cols].copy()
 
 
-#------------------------------------------
-regions = st.selectbox("Select a Region:", 
-            ("Region 1 - North Coast",
-            "Region 2 - San Francisco Bay",
-            "Region 3 - Central Coast",
-            "Region 4 - Los Angeles",
-            "Region 5F - Fresno",
-            "Region 5R - Redding",
-            "Region 5S - Sacramento",
-            "Region 6A - South Lake Tahoe",
-            "Region 6B - Victorville",
-            "Region 7 - Colorado River Basin",
-            "Region 8 - Santa Ana",
-            "Region 9 - San Diego"),
-            index=None,
-            placeholder="No selected Region",
-            )
-#neu mot vung duoc chon thi lam
-if regions:
-    placeholder_1 = st.empty()
-    placeholder_1.write('Wait for downloading 3 files of ' + regions)
-    try :
-        #thuc thi ham download_data_smarts(regions) va tra ve list cac file da tai 
-        lfile_datai = download_data_smarts(regions)
-        #placeholder_1.write('Downloaded files:')
-        #st.write(lfile_datai)
-    except:
-        placeholder_1.write('Tải file không đạt!')
+        # Xuất ra Excel
+        output = BytesIO()
+        with pd.ExcelWriter(output, engine="xlsxwriter") as writer:
+            df_final.to_excel(writer, sheet_name="Data", index=False)
 
+            # Lấy workbook và worksheet
+            workbook  = writer.book
+            worksheet = writer.sheets["Data"]
+
+            # Freeze Panes: cố định dòng đầu và 4 cột đầu
+            worksheet.freeze_panes(1, 4)  
+            # (1,4) nghĩa là khóa hàng trên dòng 2 và cột trước cột E
+
+        tbaodong1.success("✅ Dữ liệu đã được xử lý xong!")
+
+        # Nút tải về
+        st.download_button(
+            label="📥 Tải Excel kết quả",
+            data=output.getvalue(),
+            file_name="SMARTS_Data.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        )
+
+
+        # Hiển thị dataframe
+        st.write(df_final.shape)
+        st.dataframe(df_final)
+    else:
+        st.write('Xử lí không thành công!')
+
+#----------------------
+def ThucThiPhan_III():
+    pass
+
+
+# -----------------------------------
+# Streamlit App
+# -----------------------------------
+st.header("📊 SMARTS Data Processing")
+
+# I. TAI FILES DU LIEU TXT TU SMARTS -------------------------
+st.subheader('✅ Download the data', divider=True)
+ThucThiPhan_I()
+
+# II XU LI VA TAO DATA MOI ------------------------------------
+st.subheader('✅ Analyze the new data and creat Sheet', divider=True)
+sheet1=None
+sheet2=None
+checkboxII = st.checkbox("📌:blue[Lấy 2 files TXT (Application Specific Data và Ad Hoc Reports Data) để xử lí và tạo dữ liệu mới]", key='P2', value=False)
+if checkboxII:
+    laydatafrom = st.radio(
+        "WHERE GET DATA ", 
+        [":blue[From Local]",":green[From Datatest]", ":red[Empty]"],
+        index=2,horizontal=True , label_visibility="visible"
+    ) 
+
+    if laydatafrom==":red[Empty]":
+        pass  
+
+    elif laydatafrom==":green[From Datatest]":
+        sheet2 = "Datatest/sheet2.txt"
+        sheet1 = "Datatest/sheet1.txt"
+        if not (os.path.exists(sheet2) and os.path.exists(sheet1)):
+            st.write(f"Chưa có : {sheet2}, {sheet1}")
+        else:
+            tbaodong1 = st.empty()
+            tbaodong1.success(f"Dữ liệu đã lấy là : :blue[{sheet2}], :green[{sheet1}]. :red[⏳ Đang xử lý...]")
+            ThucThiPhan_II(sheet2, sheet1)
+
+    elif laydatafrom==":blue[From Local]":
+        sheet2 = st.file_uploader("Upload sheet2.txt :red[(Application Specific Data)]", type=["txt"])
+        sheet1 = st.file_uploader("Upload sheet1.txt :red[(Ad Hoc Reports Data)]", type=["txt"])
+        if not (sheet2 and sheet1):
+            st.write('Chưa có dữ liệu')
+        else:
+            st.success(f"Đã lấy dữ liệu cần : {sheet2.name}, {sheet1.name}.Chờ xử lí.")
+            ThucThiPhan_II(sheet2, sheet1)
+ 
+# IV DO THI HOA DU LIEU -------------------------
+st.subheader('✅ Visualize the data', divider=True)
+ThucThiPhan_III()
+#⏱️
