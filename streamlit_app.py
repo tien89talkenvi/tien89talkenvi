@@ -283,10 +283,23 @@ def ThucThiPhan_III():
 # Streamlit App
 # -----------------------------------
 st.header("📊 SMARTS Data Processing")
+st.markdown('''
+    This program will analyze the wastewater data sets of reported 
+    industrial establishments to extract the necessary information 
+    to illustrate them graphically to help monitor, inspect and 
+    evaluate the environmental management in this field in a more 
+    legal and effective manner.''')
 
 # I. TAI FILES DU LIEU TXT TU SMARTS -------------------------
 st.subheader('✅ Download the data', divider=True)
-ThucThiPhan_I()
+st.write("3 tập dữ liệu TXT dạng CVS cần có để làm việc cho mỗi Region_N nên đặt lại tên dạng như dưới đây sau khi tải về (lúc đầu tên chúng là file.txt hoặc file(1).txt, file(2).txt...)) : ")
+st.write("Region_N_Industrial_Ad_Hoc_Reports_Parameter_Data.txt")
+st.write("Region_N_Industrial_Application_Specific_Data.txt")
+st.write("Region_N_Industrial_Annual_Reports.txt")
+
+checkboxI = st.checkbox("📌Chọn tải về 3 files với Region sẽ chọn , nếu chưa có : ", key='P1', value=False)
+if checkboxI:
+    ThucThiPhan_I()
 
 # II XU LI VA TAO DATA MOI ------------------------------------
 st.subheader('✅ Analyze the new data and creat Sheet', divider=True)
