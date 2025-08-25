@@ -16,6 +16,7 @@ import tempfile
 from datetime import datetime
 import matplotlib.pyplot as plt
 import numpy as np
+import chardet
 
 
 
@@ -31,7 +32,8 @@ thresholds = {
     "pH_low": 6.0,   # std units
     "pH_high": 9.0
 }
-#-------------------
+
+#-------------------------
 def ThucThiPhan_I():
     LOI='OK'
     # Ham tai file txt du lieu dang cvs cua cac mien thuoc bang Cali
@@ -169,10 +171,10 @@ def ThucThiPhan_I():
 
 #-------------------
 #@st.cache_data
-def ThucThiPhan_II(sheet2,sheet1):
+def ThucThiPhan_II(sheet2,sheet1,sheet3):
     if sheet2 and sheet1:
         # Đọc sheet2.txt (Application Specific Data)
-        df1 = pd.read_csv(sheet2, sep="\t", dtype=str)
+        df1 = pd.read_csv(sheet2, sep="\t", dtype=str, encoding='cp1252')
         #st.write(df1)
 
         # Đọc sheet1.txt (Ad Hoc Reports Data)
@@ -297,7 +299,7 @@ st.write("Region_N_Industrial_Ad_Hoc_Reports_Parameter_Data.txt")
 st.write("Region_N_Industrial_Application_Specific_Data.txt")
 st.write("Region_N_Industrial_Annual_Reports.txt")
 
-checkboxI = st.checkbox("📌Chọn tải về 3 files với Region sẽ chọn , nếu chưa có : ", key='P1', value=False)
+checkboxI = st.checkbox("📌Chọn tải về 3 files với Region sẽ chọn , :red[nếu chưa có] : ", key='P1', value=False)
 if checkboxI:
     ThucThiPhan_I()
 
@@ -305,7 +307,8 @@ if checkboxI:
 st.subheader('✅ Analyze the new data and creat Sheet', divider=True)
 sheet1=None
 sheet2=None
-checkboxII = st.checkbox("📌:blue[Lấy 2 files TXT (Application Specific Data và Ad Hoc Reports Data) để xử lí và tạo dữ liệu mới]", key='P2', value=False)
+sheet3=None
+checkboxII = st.checkbox("📌:blue[Lấy 3 files TXT (Application Specific Data, Ad Hoc Reports Data, Industrial Annual Reports) để xử lí và tạo dữ liệu mới]", key='P2', value=False)
 if checkboxII:
     laydatafrom = st.radio(
         "WHERE GET DATA ", 
@@ -325,19 +328,81 @@ if checkboxII:
         else:
             tbaodong1 = st.empty()
             tbaodong1.success(f"Dữ liệu đã lấy là : :blue[{sheet2}], :green[{sheet1}]. :red[⏳ Đang xử lý...]")
-            ThucThiPhan_II(sheet2, sheet1)
+            ThucThiPhan_II(sheet2, sheet1, sheet3)
 
     elif laydatafrom==":blue[From Local]":
-        sheet2 = st.file_uploader("Upload sheet2.txt :red[(Application Specific Data)]", type=["txt"])
-        sheet1 = st.file_uploader("Upload sheet1.txt :red[(Ad Hoc Reports Data)]", type=["txt"])
-        if not (sheet2 and sheet1):
+        sheet2=None
+        sheet1=None
+        sheet3=None
+
+        sheet2_ok=False
+        sheet1_ok=False
+        sheet3_ok=False
+        ## Tai len file Industrial Application Specific Data dong vai tro shhet2
+        sheet2 = st.file_uploader("**1**. Upload file: :red[Industrial Application Specific Data]", type=["txt"], key='UF1')
+        # File mẫu có sẵn trên server ung voi sheet2
+        headers_mau = pd.read_csv("Headers/sheet2_headers.txt", nrows=0, encoding='cp1252').columns.tolist()
+        if sheet2 is not None:
+            # Đọc trực tiếp file upload sheet2
+            df_upload = pd.read_csv(sheet2, nrows=0, encoding='cp1252')
+            # lay headers cua no
+            headers_upload = df_upload.columns.tolist()
+            # so sanh de lay lai hoac di tiep
+            if headers_upload == headers_mau:
+                st.success("👍File Industrial Application Specific Data was uploaded successfully.")
+                sheet2_ok = True
+            else:
+                sheet2_ok = False
+                st.warning("😩Invalid file please select another file...")
+
+        if sheet2_ok == True:
+            ## Tai len file Industrial Ad Hoc Reports Data dong vai tro shhet1
+            sheet1_ok=False
+            sheet1 = st.file_uploader("**2**. Upload file: :red[Industrial Ad Hoc Reports Data]", type=["txt"], key='UF2')
+            # File mẫu có sẵn trên server ung voi sheet2
+            headers_mau1 = pd.read_csv("Headers/sheet1_headers.txt", nrows=0, encoding='cp1252').columns.tolist()
+            if sheet1 is not None:
+                # Đọc trực tiếp file upload sheet2
+                df_upload1 = pd.read_csv(sheet1, nrows=0, encoding='cp1252')
+                # lay headers cua no
+                headers_upload1 = df_upload1.columns.tolist()
+                # so sanh de lay lai hoac di tiep
+                if headers_upload1 == headers_mau1:
+                    st.success("👍File Industrial Ad Hoc Reports Data was uploaded successfully.")
+                    sheet1_ok = True
+                else:
+                    sheet1_ok = False
+                    st.warning("😩Invalid file please select another file...")
+
+        if sheet1_ok == True:
+            ## Tai len file Industrial Annual Reports dong vai tro shhet3
+            sheet3_ok=False
+            sheet3 = st.file_uploader("**3**. Upload file: :red[Industrial Annual Reports]", type=["txt"], key='UF3')
+            # File mẫu có sẵn trên server ung voi sheet2
+            headers_mau3 = pd.read_csv("Headers/sheet3_headers.txt", nrows=0, encoding='cp1252').columns.tolist()
+            if sheet3 is not None:
+                # Đọc trực tiếp file upload sheet2
+                df_upload3 = pd.read_csv(sheet3, nrows=0, encoding='cp1252')
+                # lay headers cua no
+                headers_upload3 = df_upload3.columns.tolist()
+                # so sanh de lay lai hoac di tiep
+                if headers_upload3 == headers_mau3:
+                    st.success("👍File Industrial Annual Reports was uploaded successfully.")
+                    sheet3_ok = True
+                else:
+                    sheet3_ok = False
+                    st.warning("😩Invalid file please select another file...")
+
+        if sheet2_ok == True and sheet1_ok == True and sheet3_ok == True:
             tbaodong1 = st.empty()
-            tbaodong1.write('Chưa có dữ liệu')
-        else:
-            tbaodong1 = st.empty()
-            tbaodong1.success(f"Đã lấy dữ liệu cần : {sheet2.name}, {sheet1.name}. :red[⏳ Đang xử lý...]")
-            ThucThiPhan_II(sheet2, sheet1)
- 
+            tbaodong1.success("✅3 file txt were uploaded succesheader. :red[⏳ Đang xử lý...]")
+            # phai cho 3 upload_file ve dau vi trong buoc lay header no da xuong vai dong roi
+            sheet2.seek(0)
+            sheet1.seek(0)
+            sheet3.seek(0)
+            ThucThiPhan_II(sheet2, sheet1, sheet3)
+
+
 # IV DO THI HOA DU LIEU -------------------------
 st.subheader('✅ Visualize the data', divider=True)
 ThucThiPhan_III()
