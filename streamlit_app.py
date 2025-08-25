@@ -293,10 +293,10 @@ st.markdown('''
 
 # I. TAI FILES DU LIEU TXT TU SMARTS -------------------------
 st.subheader('✅ Download the data', divider=True)
-st.write("3 tập dữ liệu TXT dạng CVS cần có để làm việc cho mỗi Region_N nên đặt lại tên dạng như dưới đây sau khi tải về (lúc đầu tên chúng là file.txt hoặc file(1).txt, file(2).txt...)) : ")
-st.write("Region_N_Industrial_Ad_Hoc_Reports_Parameter_Data.txt")
-st.write("Region_N_Industrial_Application_Specific_Data.txt")
-st.write("Region_N_Industrial_Annual_Reports.txt")
+st.write("3 tập dữ liệu TXT dạng CVS cần có để làm việc cho mỗi Region_N, có thể đặt lại tên :red[nếu cần] như dạng dưới đây sau khi tải về (lúc đầu tên chúng là file.txt hoặc file(1).txt, file(2).txt...)) : ")
+st.write(":blue[Region_N_Industrial_Ad_Hoc_Reports_Parameter_Data.txt]")
+st.write(":green[Region_N_Industrial_Application_Specific_Data.txt]")
+st.write(":blue[Region_N_Industrial_Annual_Reports.txt]")
 
 checkboxI = st.checkbox("📌Chọn tải về 3 files với Region sẽ chọn , :red[nếu chưa có] : ", key='P1', value=False)
 if checkboxI:
