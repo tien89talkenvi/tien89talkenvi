@@ -338,7 +338,7 @@ if checkboxII:
         sheet1_ok=False
         sheet3_ok=False
         ## Tai len file Industrial Application Specific Data dong vai tro shhet2
-        sheet2 = st.file_uploader("**1**. Upload file: :red[Industrial Application Specific Data]", type=["txt"], key='UF1')
+        sheet2 = st.file_uploader("**1**. Upload file: :red[Industrial Application Specific Data]", type=["txt"], key='UF2')
         # File mẫu có sẵn trên server ung voi sheet2
         headers_mau = pd.read_csv("Headers/sheet2_headers.txt", nrows=0, encoding='cp1252').columns.tolist()
         if sheet2 is not None:
@@ -357,7 +357,7 @@ if checkboxII:
         if sheet2_ok == True:
             ## Tai len file Industrial Ad Hoc Reports Data dong vai tro shhet1
             sheet1_ok=False
-            sheet1 = st.file_uploader("**2**. Upload file: :red[Industrial Ad Hoc Reports Data]", type=["txt"], key='UF2')
+            sheet1 = st.file_uploader("**2**. Upload file: :red[Industrial Ad Hoc Reports Data]", type=["txt"], key='UF1')
             # File mẫu có sẵn trên server ung voi sheet2
             headers_mau1 = pd.read_csv("Headers/sheet1_headers.txt", nrows=0, encoding='cp1252').columns.tolist()
             if sheet1 is not None:
